@@ -1,0 +1,12 @@
+{
+  "name": "deadlock-analysis-dashboard",
+  "version": "1.0.0",
+  "description": "Interactive OS dashboard: Banker's Algorithm, deadlock detection, prevention and recovery.",
+  "private": true,
+  "scripts": {
+    "start": "node scripts/serve.js",
+    "test": "node tests/run-tests.js"
+  },
+  "engines": { "node": ">=16" },
+  "license": "MIT"
+}

@@ -1,0 +1,30 @@
+// Test cases TC1-TC6 and the Test Cases / report page.
+// ---- tests
+const nmv=(s,a)=>a.map(k=>s.P[k]).join(' → '),ST=(f,run)=>{try{return run()}catch(x){return{input:'',expected:'',actual:'Error: '+x.message,pass:false,expl:'Test threw an exception.'}}};
+const TESTS=[
+{id:'TC1',t:'Safe state (default dataset)',run:()=>{const s=clone(DEF),n=need(s),r=safety(s.alloc,n,s.avail),eN='7,4,3|1,2,2|6,0,0|0,1,1|4,3,1',eW=['5,3,2','7,4,3','7,4,5','7,5,5','10,5,7'];
+ const okN=n.map(x=>x.join()).join('|')==eN,okW=r.steps.every((t,k)=>t.work.join()==eW[k])&&r.steps.length==5,sq=nmv(s,r.seq);
+ return{input:'Default Allocation, Maximum, Available (3,3,2)',expected:'Need matrix as specified; SAFE; sequence P1 → P3 → P4 → P0 → P2; Work (5,3,2),(7,4,3),(7,4,5),(7,5,5),(10,5,7)',actual:`Need ${okN?'correct':'WRONG'}; ${r.safe?'SAFE':'UNSAFE'}; ${sq}; final Work ${V(r.steps.length?r.steps[r.steps.length-1].work:[])}`,pass:okN&&okW&&r.safe&&sq=='P1 → P3 → P4 → P0 → P2',expl:'Need = Max − Alloc and the safety algorithm were executed on the default data.',html:M(s,n,'Need')+workTbl(s,r)}}},
+{id:'TC2',t:'Request exceeds Available → waiting',run:()=>{const s=clone(DEF),b=JSON.stringify(s),o=req(s,'P0',[0,4,0]);
+ return{input:'P0 requests (0,4,0); Need P0 (7,4,3); Available (3,3,2)',expected:'WAITING; allocation unchanged',actual:`${o.status}; state unchanged: ${JSON.stringify(s)==b}`,pass:o.status=='WAITING'&&JSON.stringify(s)==b,expl:o.msg,html:'<ol>'+o.steps.map(x=>`<li>${x}</li>`).join('')+'</ol>'}}},
+{id:'TC3',t:'Request makes state unsafe → denied',run:()=>{const s=clone(DEF),b=JSON.stringify(s),o=req(s,'P4',[3,3,0]);
+ return{input:'P4 requests (3,3,0); Need P4 (4,3,1); Available (3,3,2)',expected:'Temporary grant, no safe sequence, DENIED, original state restored',actual:`${o.status}; safe=${o.r?o.r.safe:'n/a'}; original restored: ${JSON.stringify(s)==b}; Available ${V(s.avail)}`,pass:o.status=='DENIED'&&o.r&&!o.r.safe&&JSON.stringify(s)==b,expl:o.msg,html:'<ol>'+o.steps.map(x=>`<li>${x}</li>`).join('')+'</ol>'}}},
+{id:'TC4',t:'Deadlock detection (single instance)',run:()=>{const cy=cycle(G0),ok=!!cy&&['P0','P1','R1','R2'].every(n=>cy.includes(n));
+ return{input:'P0 holds R1, requests R2; P1 holds R2, requests R1',expected:'Cycle P0 → R2 → P1 → R1 → P0; DEADLOCK',actual:cy?'Cycle '+cy.join(' → ')+'; DEADLOCK':'No cycle',pass:ok,expl:'DFS over the resource allocation graph found a circular wait; each resource has one instance.',html:gsvg(G0,cy)}}},
+{id:'TC5',t:'Deadlock prevention (resource ordering)',run:()=>{const bad=okOrd(['R2','R1']),good=okOrd(['R1','R2']),u=cycle(prevSim({P0:['R1','R2'],P1:['R2','R1']})),f=prevSim({P0:['R1','R2'],P1:['R1','R2']}),c=cycle(f);
+ return{input:'Rule R1 → R2; P0: R1,R2; P1 attempts R2,R1',expected:'R2-then-R1 rejected; ordered acquisition has no cycle; unordered has cycle',actual:`R1,R2 valid: ${good}; R2,R1 valid: ${bad}; unordered cycle: ${!!u}; ordered cycle: ${!!c}`,pass:good&&!bad&&!!u&&!c,expl:'With ordering enforced, circular wait cannot form.',html:gsvg(f,c)}}},
+{id:'TC6',t:'Boundary and invalid inputs',run:()=>{const rows=[];const R=(n,i,e,a,ok)=>rows.push([n,i,e,a,ok?B('g','PASS'):B('r','FAIL')]);
+ let s=clone(DEF);s.avail=[0,0,0];let r=safety(s.alloc,need(s),s.avail),o=req(s,'P0',[1,0,0]);
+ R('1. Available = 0','Available (0,0,0)','Accepted as valid; request WAITING',`validation errors: ${validate(s).length}; safe=${r.safe}; request → ${o.status}`,validate(s).length==0&&o.status=='WAITING');
+ s=clone(DEF);s.max[1]=[2,0,0];r=safety(s.alloc,need(s),s.avail);let o1=req(s,'P1',[1,0,0]),o2=req(s,'P1',[0,0,0]);
+ R('2. Remaining Need = 0','P1 Need (0,0,0)','Valid; P1 finishes first; extra request invalid',`errors: ${validate(s).length}; first=${s.P[r.seq[0]]}; (1,0,0) → ${o1.status}; (0,0,0) → ${o2.status}`,validate(s).length==0&&r.seq[0]==1&&o1.status=='INVALID'&&o2.status=='GRANTED');
+ o=req(DEF,'P9',[0,0,0]);R('3. Invalid Process ID','P9 requests (0,0,0)','Rejected',`${o.status}: ${o.msg}`,o.status=='INVALID');
+ o=req(DEF,'P1',[-1,0,0]);R('4. Negative request','P1 requests (−1,0,0)','Rejected',`${o.status}: ${o.msg}`,o.status=='INVALID');
+ s=clone(DEF);s.alloc[0][0]=8;let e=validate(s);R('5. Allocation > Maximum','P0 Allocation A = 8, Max A = 7','Validation error',e.length?e[0]:'No error',e.length>0);
+ return{input:'Five independent sub-tests',expected:'All five handled correctly',actual:rows.filter(x=>x[4].includes('PASS')).length+' of 5 passed',pass:rows.every(x=>x[4].includes('PASS')),expl:'Zero Available and zero Need are valid boundary values handled by the algorithm; only negative values, unknown IDs and Allocation > Maximum are rejected.',html:T(['Sub-test','Input','Expected','Actual','Status'],rows)}}}];
+function runT(id){const t=TESTS.find(x=>x.id==id);RES[id]=ST(0,t.run);log(`${id} ${RES[id].pass?'PASS':'FAIL'}`);go()}
+function runAll(){TESTS.forEach(t=>RES[t.id]=ST(0,t.run));log('All tests run: '+TESTS.filter(t=>RES[t.id].pass).length+'/6 passed');go()}
+function pgTests(){const st=id=>!RES[id]?B('','NOT RUN'):RES[id].pass?B('g','PASS'):B('r','FAIL');
+ return`<div class="card np"><button onclick="runAll()">Run all tests</button><button class=s onclick="RES={};go()">Clear results</button><button class=s onclick="print()">Print / save report as PDF</button><br><small>Tests run on a private copy of the sample data, so they never change your configuration. Status comes from comparing real output with the expected result.</small></div>
+ <div class=card><h3>Test report summary</h3>${T(['ID','Scenario','Status'],TESTS.map(t=>[t.id,t.t,st(t.id)]))}</div>
+ ${TESTS.map(t=>{const r=RES[t.id];return`<div class="card res ${r?(r.pass?'g':'r'):''}"><h3>${t.id} – ${t.t} ${st(t.id)}</h3><div class=np><button onclick="runT('${t.id}')">${r?'Rerun':'Run'} ${t.id}</button>${r?`<button class=s onclick="delete RES.${t.id};go()">Reset</button>`:''}</div>${r?`<p><b>Input:</b> ${r.input}</p><p><b>Expected:</b> ${r.expected}</p><p><b>Actual:</b> ${r.actual}</p><p><b>Explanation:</b> ${r.expl}</p>${r.html||''}`:'<small>Not run yet.</small>'}</div>`}).join('')}`}

@@ -1,0 +1,21 @@
+/* Deadlock Analysis & Resource Allocation Dashboard - styles */
+:root{--bg:#0b1426;--side:#0f1b33;--card:#f4f6fa;--ink:#13203a;--mut:#5b6b86;--blue:#2563eb;--cy:#06b6d4;--g:#16a34a;--r:#dc2626;--o:#d97706;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#e6ecf8;font:15px/1.5 "Segoe UI",system-ui,Roboto,Arial,sans-serif;display:flex;min-height:100vh}
+aside{width:250px;background:var(--side);padding:20px 12px;flex:none;border-right:1px solid #1d2d4f}
+aside h2{font-size:15px;margin:0 8px 16px;color:var(--cy)}aside a{display:block;padding:9px 12px;margin:2px 0;border-radius:8px;color:#b9c6e0;text-decoration:none}
+aside a:hover{background:#18284a}aside a.on{background:var(--blue);color:#fff}
+main{flex:1;padding:24px;min-width:0}h1{margin:0 0 16px;font-size:24px}
+.card{background:var(--card);color:var(--ink);border-radius:12px;padding:16px;margin-bottom:16px}.card h3{margin:0 0 10px;font-size:16px}
+.card.res{border-left:6px solid var(--mut)}.card.res.g{border-color:var(--g)}.card.res.o{border-color:var(--o)}.card.res.r{border-color:var(--r)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px}.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px}
+.kpi b{display:block;font-size:26px;color:var(--blue)}.kpi span{color:var(--mut);font-size:13px}
+.tw{overflow-x:auto;max-width:100%}table{border-collapse:collapse;width:100%;font-size:14px}th{background:#0f1b33;color:#fff;padding:7px 10px;text-align:center}td{padding:6px 10px;text-align:center;border-bottom:1px solid #d5dbe8}tr:nth-child(even) td{background:#e9edf5}
+td input{width:60px;padding:4px;text-align:center;border:1px solid #aab4c8;border-radius:6px}input,select{font:inherit;padding:6px 8px;border:1px solid #aab4c8;border-radius:6px;background:#fff;color:var(--ink)}
+button{font:inherit;background:var(--blue);color:#fff;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;margin:2px 4px 2px 0}button.s{background:#475569}button.d{background:var(--r)}button:hover{filter:brightness(1.1)}
+.b{display:inline-block;padding:2px 10px;border-radius:99px;font-weight:600;font-size:13px;color:#fff;background:var(--mut)}.b.g{background:var(--g)}.b.r{background:var(--r)}.b.o{background:var(--o)}.b.c{background:var(--cy)}
+.bar{background:#d5dbe8;border-radius:99px;height:14px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--cy))}
+.err{border-left:6px solid var(--r)}.g{max-width:420px;width:100%}svg text{font:600 13px sans-serif;fill:#13203a}code{background:#e1e6f0;padding:1px 5px;border-radius:4px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:8px 0}p,li{margin:6px 0}small{color:var(--mut)}
+@media(max-width:800px){body{display:block}aside{width:100%;display:flex;flex-wrap:wrap}aside h2{width:100%}aside a{padding:6px 10px}}
+@media print{aside,.np{display:none}body{background:#fff}h1{color:#000}}
